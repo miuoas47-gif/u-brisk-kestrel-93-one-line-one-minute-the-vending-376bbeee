@@ -18,8 +18,15 @@ def main() -> int:
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(LINE + "\n")
+    expected = (LINE + "\n").encode("utf-8")
+    with open(path, "wb") as f:
+        f.write(expected)
+    # Self-check: the entry must be byte-identical on every run, so verify
+    # what landed on disk instead of trusting a silent partial write.
+    with open(path, "rb") as f:
+        if f.read() != expected:
+            print("entry.txt does not match the expected line", file=sys.stderr)
+            return 1
     return 0
 
 
